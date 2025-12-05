@@ -1,5 +1,7 @@
 # Booking System
 
+[![CI](https://github.com/thiefspin/booking-system/actions/workflows/ci.yml/badge.svg)](https://github.com/thiefspin/booking-system/actions/workflows/ci.yml)
+
 A full-stack appointment booking system built with Angular and Spring Boot, designed for managing branch appointments with time slot availability.
 
 ## 🏗️ Architecture
