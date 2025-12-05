@@ -188,7 +188,7 @@ docker-compose logs -f backend
 ## Environment Variables
 
 Key environment variables (defined in `.env`):
-- `POSTGRES_DB`: Database name (default: booking_system)
+- `POSTGRES_URL`: Database jdbc url (default: jdbc:postgresql://postgres:5432/booking_system)
 - `POSTGRES_USER`: Database user (default: postgres)
 - `POSTGRES_PASSWORD`: Database password (default: secret)
 - `BACKEND_PORT`: Backend port (default: 8090)
