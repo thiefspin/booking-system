@@ -4,6 +4,23 @@
 
 A full-stack appointment booking system built with Angular and Spring Boot, designed for managing branch appointments with time slot availability.
 
+## 📸 Screenshots
+
+### Branch List
+![Branch List](docs/screenshots/branch-list.png)
+
+### Appointment Booking
+![Appointment Booking](docs/screenshots/appointment-booking.png)
+
+### Appointment Customer Details
+![Customer Details](docs/screenshots/customer-details.png)
+
+### Appointment Booking Success
+![Appointment Booking Success](docs/screenshots/booking-successful.png)
+
+### Appointment Booking Management
+![Appointment Booking Management](docs/screenshots/manage-appointment.png)
+
 ## 🏗️ Architecture
 
 - **Frontend**: Angular 17 with TypeScript
