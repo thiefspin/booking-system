@@ -1,0 +1,651 @@
+<div class="container container-main">
+  <!-- Step Indicator -->
+  <div
+    class="step-indicator mb-4"
+    *ngIf="currentStep < 4"
+    [style.--step-progress]="currentStep - 1"
+  >
+    <div
+      class="step"
+      [class.active]="currentStep === 1"
+      [class.completed]="currentStep > 1"
+    >
+      1
+    </div>
+    <div
+      class="step"
+      [class.active]="currentStep === 2"
+      [class.completed]="currentStep > 2"
+    >
+      2
+    </div>
+    <div
+      class="step"
+      [class.active]="currentStep === 3"
+      [class.completed]="currentStep > 3"
+    >
+      3
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+
+  <!-- Error Alert -->
+  <div class="alert alert-danger" *ngIf="error">
+    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+    {{ error }}
+  </div>
+
+  <!-- Step 1: Select Branch -->
+  <div *ngIf="currentStep === 1">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">Select a Branch</h4>
+      </div>
+      <div class="card-body">
+        <!-- Search Bar -->
+        <div class="mb-4">
+          <div class="search-container">
+            <div class="text-muted small mb-2">
+              <i class="bi bi-info-circle"></i>
+              Tip: Press <kbd>Ctrl</kbd>+<kbd>K</kbd> to quickly search •
+              Powered by server-side search
+            </div>
+            <div class="input-group">
+              <span class="input-group-text bg-white">
+                <i class="bi bi-search" *ngIf="!searchLoading"></i>
+                <span
+                  class="spinner-border spinner-border-sm"
+                  *ngIf="searchLoading"
+                  role="status"
+                >
+                  <span class="visually-hidden">Searching...</span>
+                </span>
+              </span>
+              <input
+                #searchInput
+                type="text"
+                class="form-control border-start-0"
+                placeholder="Search across all branches by name, address, or code..."
+                [(ngModel)]="searchTerm"
+                (input)="onSearchChange($any($event.target).value)"
+                aria-label="Search branches"
+                title="Press Ctrl+K to focus search"
+              />
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                *ngIf="searchTerm"
+                (click)="clearSearch()"
+                aria-label="Clear search"
+              >
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+            <div
+              class="text-muted small mt-2"
+              *ngIf="searchTerm && !searchLoading"
+            >
+              <span *ngIf="filteredBranches.length > 0">
+                <i class="bi bi-check-circle text-success"></i>
+                Found {{ filteredBranches.length }}
+                {{ filteredBranches.length === 1 ? "branch" : "branches" }}
+                matching "{{ searchTerm }}" from all locations
+              </span>
+              <span *ngIf="filteredBranches.length === 0">
+                No results found
+              </span>
+            </div>
+            <div class="text-muted small mt-2" *ngIf="searchLoading">
+              <span>
+                <span
+                  class="spinner-border spinner-border-sm me-1"
+                  role="status"
+                ></span>
+                Searching...
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3">
+          <div
+            class="col-md-6 col-lg-4"
+            *ngFor="let branch of filteredBranches"
+          >
+            <div
+              class="card branch-card h-100"
+              [class.selected]="selectedBranch?.id === branch.id"
+              (click)="selectBranch(branch)"
+            >
+              <div class="card-body">
+                <h5
+                  class="card-title"
+                  [innerHTML]="highlightMatch(branch.name, searchTerm)"
+                ></h5>
+                <p class="card-text mb-2">
+                  <i class="bi bi-geo-alt-fill text-primary me-2"></i>
+                  <span
+                    [innerHTML]="highlightMatch(branch.address, searchTerm)"
+                  ></span>
+                </p>
+                <p class="card-text mb-2">
+                  <i class="bi bi-telephone-fill text-primary me-2"></i>
+                  {{ branch.phoneNumber }}
+                </p>
+                <p class="card-text">
+                  <i class="bi bi-clock-fill text-primary me-2"></i>
+                  {{ branch.openingTime }} - {{ branch.closingTime }}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="text-center mt-4"
+          *ngIf="filteredBranches.length === 0 && !loading && !searchTerm"
+        >
+          <p class="text-muted">No branches available at the moment.</p>
+        </div>
+        <div
+          class="text-center mt-4"
+          *ngIf="filteredBranches.length === 0 && !loading && searchTerm"
+        >
+          <div class="no-results">
+            <i class="bi bi-search text-muted" style="font-size: 3rem"></i>
+            <p class="text-muted mt-3">
+              No branches found matching "{{ searchTerm }}"
+            </p>
+            <button
+              type="button"
+              class="btn btn-outline-primary btn-sm mt-2"
+              (click)="clearSearch()"
+            >
+              Clear search
+            </button>
+          </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div
+          class="pagination-container mt-4"
+          *ngIf="
+            (totalPages > 1 || totalElements > pageSizeOptions[0]) &&
+            !isSearching
+          "
+        >
+          <div
+            class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3"
+          >
+            <div
+              class="d-flex flex-column flex-sm-row align-items-center gap-2 gap-sm-3"
+            >
+              <div class="text-muted text-center text-sm-start">
+                <span class="d-none d-sm-inline">Showing </span>
+                {{ currentPage * pageSize + 1 }} -
+                {{ Math.min((currentPage + 1) * pageSize, totalElements) }}
+                <span class="d-none d-sm-inline"
+                  >of {{ totalElements }} branches</span
+                >
+                <span class="d-inline d-sm-none">/ {{ totalElements }}</span>
+              </div>
+              <div class="d-flex align-items-center page-size-selector">
+                <label
+                  for="pageSize"
+                  class="form-label mb-0 me-2 text-muted"
+                  aria-label="Items per page"
+                >
+                  Per page:
+                </label>
+                <select
+                  id="pageSize"
+                  class="form-select form-select-sm shadow-sm"
+                  [value]="pageSize"
+                  (change)="onPageSizeChange($any($event.target).value)"
+                  aria-label="Select number of items per page"
+                  title="Select number of items per page"
+                >
+                  <option
+                    *ngFor="let size of pageSizeOptions"
+                    [value]="size"
+                    [selected]="size === pageSize"
+                  >
+                    {{ size }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <nav aria-label="Branch pagination" *ngIf="totalPages > 1">
+              <ul class="pagination mb-0">
+                <li class="page-item" [class.disabled]="currentPage === 0">
+                  <button
+                    class="page-link"
+                    (click)="previousPage()"
+                    [disabled]="currentPage === 0"
+                  >
+                    <i class="bi bi-chevron-left"></i>
+                    <span class="d-none d-sm-inline">Previous</span>
+                  </button>
+                </li>
+
+                <!-- Page numbers with ellipsis -->
+                <ng-container
+                  *ngFor="let pageIndex of getPageNumbers(); let i = index"
+                >
+                  <!-- Show ellipsis before this page number if there's a gap -->
+                  <li
+                    class="page-item disabled"
+                    *ngIf="
+                      i > 0 &&
+                      shouldShowPageNumber(pageIndex) &&
+                      !shouldShowPageNumber(pageIndex - 1) &&
+                      pageIndex - 1 !== 0
+                    "
+                  >
+                    <span class="page-link d-none d-sm-block">...</span>
+                    <span class="page-link d-block d-sm-none px-2">...</span>
+                  </li>
+
+                  <!-- Page number button -->
+                  <li
+                    class="page-item"
+                    *ngIf="shouldShowPageNumber(pageIndex)"
+                    [class.active]="pageIndex === currentPage"
+                    [class.d-none]="
+                      totalPages > 7 && !shouldShowPageNumber(pageIndex)
+                    "
+                    [class.d-sm-block]="true"
+                  >
+                    <button class="page-link" (click)="goToPage(pageIndex)">
+                      <span class="d-none d-sm-inline">{{
+                        pageIndex + 1
+                      }}</span>
+                      <span class="d-inline d-sm-none">{{
+                        pageIndex + 1
+                      }}</span>
+                    </button>
+                  </li>
+                </ng-container>
+
+                <li
+                  class="page-item"
+                  [class.disabled]="currentPage === totalPages - 1"
+                >
+                  <button
+                    class="page-link"
+                    (click)="nextPage()"
+                    [disabled]="currentPage === totalPages - 1"
+                  >
+                    <span class="d-none d-sm-inline">Next</span>
+                    <i class="bi bi-chevron-right"></i>
+                  </button>
+                </li>
+              </ul>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Select Date & Time -->
+  <div *ngIf="currentStep === 2">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">Select Date & Time</h4>
+        <small class="text-white-50">Branch: {{ selectedBranch?.name }}</small>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="bookingForm">
+          <div class="row">
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="date" class="form-label">Select Date</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="date"
+                  formControlName="date"
+                  [min]="minDate"
+                  [max]="maxDate"
+                  (change)="onDateChange()"
+                />
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <div *ngIf="bookingForm.get('date')?.value">
+          <h5 class="mt-4 mb-3">Available Time Slots</h5>
+          <div class="time-slot-grid">
+            <button
+              *ngFor="let slot of availableSlots"
+              type="button"
+              class="time-slot-btn"
+              [class.selected]="isSlotSelected(slot)"
+              [disabled]="
+                !slot.available || slot.currentBookings >= slot.maxBookings
+              "
+              (click)="selectTimeSlot(slot)"
+            >
+              <div>{{ formatTime(slot.startTime) }}</div>
+              <small
+                *ngIf="
+                  slot.available && slot.currentBookings < slot.maxBookings
+                "
+                class="text-muted"
+              >
+                {{ getRemainingSlots(slot) }} slots left
+              </small>
+              <small
+                *ngIf="
+                  !slot.available || slot.currentBookings >= slot.maxBookings
+                "
+                class="text-danger"
+              >
+                Full
+              </small>
+            </button>
+          </div>
+          <div
+            class="text-center mt-4"
+            *ngIf="availableSlots.length === 0 && !loading"
+          >
+            <p class="text-muted">
+              No available time slots for the selected date.
+            </p>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="previousStep()"
+          >
+            <i class="bi bi-arrow-left me-2"></i> Back
+          </button>
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="!canProceedToStep3()"
+            (click)="nextStep()"
+          >
+            Next <i class="bi bi-arrow-right ms-2"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Enter Details -->
+  <div *ngIf="currentStep === 3">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="mb-0">Enter Your Details</h4>
+        <small class="text-white-50">
+          {{ selectedBranch?.name }} |
+          {{ bookingForm.get("date")?.value | date: "longDate" }} |
+          {{ formatTime(selectedSlot?.startTime || "") }}
+        </small>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="bookingForm" (ngSubmit)="submitBooking()">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="firstName" class="form-label">First Name *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="firstName"
+                  formControlName="firstName"
+                  (blur)="markFieldAsTouched('firstName')"
+                  [class.is-invalid]="
+                    bookingForm.get('firstName')?.invalid &&
+                    bookingForm.get('firstName')?.touched
+                  "
+                />
+                <div
+                  class="text-danger small mt-1"
+                  *ngIf="
+                    bookingForm.get('firstName')?.invalid &&
+                    bookingForm.get('firstName')?.touched
+                  "
+                >
+                  First name is required (max 100 characters).
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="lastName" class="form-label">Last Name *</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="lastName"
+                  formControlName="lastName"
+                  (blur)="markFieldAsTouched('lastName')"
+                  [class.is-invalid]="
+                    bookingForm.get('lastName')?.invalid &&
+                    bookingForm.get('lastName')?.touched
+                  "
+                />
+                <div
+                  class="text-danger small mt-1"
+                  *ngIf="
+                    bookingForm.get('lastName')?.invalid &&
+                    bookingForm.get('lastName')?.touched
+                  "
+                >
+                  Last name is required (max 100 characters).
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="email" class="form-label">Email Address *</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="email"
+                  formControlName="email"
+                  (blur)="markFieldAsTouched('email')"
+                  [class.is-invalid]="
+                    bookingForm.get('email')?.invalid &&
+                    bookingForm.get('email')?.touched
+                  "
+                />
+                <div
+                  class="text-danger small mt-1"
+                  *ngIf="
+                    bookingForm.get('email')?.invalid &&
+                    bookingForm.get('email')?.touched
+                  "
+                >
+                  Please enter a valid email address.
+                </div>
+                <small class="form-text text-muted">
+                  We'll use this to send your confirmation and for appointment
+                  lookup.
+                </small>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="phoneNumber" class="form-label"
+                  >Phone Number *</label
+                >
+                <input
+                  type="tel"
+                  class="form-control"
+                  id="phoneNumber"
+                  formControlName="phoneNumber"
+                  placeholder="+1-555-123-4567"
+                  (blur)="markFieldAsTouched('phoneNumber')"
+                  [class.is-invalid]="
+                    bookingForm.get('phoneNumber')?.invalid &&
+                    bookingForm.get('phoneNumber')?.touched
+                  "
+                />
+                <div
+                  class="text-danger small mt-1"
+                  *ngIf="
+                    bookingForm.get('phoneNumber')?.invalid &&
+                    bookingForm.get('phoneNumber')?.touched
+                  "
+                >
+                  Please enter a valid phone number.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="purpose" class="form-label">Purpose of Visit</label>
+            <input
+              type="text"
+              class="form-control"
+              id="purpose"
+              formControlName="purpose"
+              maxlength="500"
+              placeholder="Brief description of your appointment (optional)"
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="notes" class="form-label">Additional Notes</label>
+            <textarea
+              class="form-control"
+              id="notes"
+              formControlName="notes"
+              rows="3"
+              maxlength="1000"
+              placeholder="Any special requirements or information (optional)"
+            ></textarea>
+          </div>
+
+          <div class="d-flex justify-content-between mt-4">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              (click)="previousStep()"
+            >
+              <i class="bi bi-arrow-left me-2"></i> Back
+            </button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="!bookingForm.valid || loading"
+            >
+              Book Appointment <i class="bi bi-check-circle ms-2"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4: Confirmation -->
+  <div *ngIf="currentStep === 4 && confirmedAppointment">
+    <div class="card">
+      <div class="card-body">
+        <div class="confirmation-box">
+          <i
+            class="bi bi-check-circle-fill text-success"
+            style="font-size: 4rem"
+          ></i>
+          <h2 class="mt-3 mb-4">Appointment Confirmed!</h2>
+
+          <div class="booking-reference">
+            {{ confirmedAppointment.bookingReference }}
+          </div>
+
+          <p class="lead mb-4">
+            Please save this booking reference. You'll need it along with your
+            email to manage your appointment.
+          </p>
+
+          <div class="appointment-details bg-white rounded p-4 text-start">
+            <h5 class="mb-3">Appointment Details</h5>
+            <div class="row">
+              <div class="col-md-6">
+                <p>
+                  <strong>Name:</strong>
+                  {{ confirmedAppointment.customerFirstName }}
+                  {{ confirmedAppointment.customerLastName }}
+                </p>
+                <p>
+                  <strong>Email:</strong>
+                  {{ confirmedAppointment.customerEmail }}
+                </p>
+                <p>
+                  <strong>Phone:</strong>
+                  {{ confirmedAppointment.customerPhone }}
+                </p>
+              </div>
+              <div class="col-md-6">
+                <p>
+                  <strong>Date:</strong>
+                  {{
+                    confirmedAppointment.appointmentDateTime | date: "longDate"
+                  }}
+                </p>
+                <p>
+                  <strong>Time:</strong>
+                  {{
+                    confirmedAppointment.appointmentDateTime | date: "shortTime"
+                  }}
+                </p>
+                <p>
+                  <strong>Duration:</strong>
+                  {{ confirmedAppointment.durationMinutes }} minutes
+                </p>
+              </div>
+            </div>
+            <div *ngIf="confirmedAppointment.purpose">
+              <p>
+                <strong>Purpose:</strong> {{ confirmedAppointment.purpose }}
+              </p>
+            </div>
+            <div *ngIf="confirmedAppointment.notes">
+              <p><strong>Notes:</strong> {{ confirmedAppointment.notes }}</p>
+            </div>
+          </div>
+
+          <div class="alert alert-info mt-4">
+            <i class="bi bi-info-circle-fill me-2"></i>
+            A confirmation email has been sent to
+            {{ confirmedAppointment.customerEmail }}
+          </div>
+
+          <div class="d-flex justify-content-center gap-3 mt-4">
+            <button
+              type="button"
+              class="btn btn-primary"
+              (click)="startNewBooking()"
+            >
+              Book Another Appointment
+            </button>
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              routerLink="/manage"
+            >
+              Manage Appointment
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

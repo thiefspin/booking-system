@@ -1,0 +1,60 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing
+coverage/
+*.spec.ts
+karma.conf.js
+
+# Build output
+dist/
+.angular/
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+.settings/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+docs/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
+
+# Environment files
+.env
+.env.*
+!src/environments/
+
+# Editor directories and files
+.editorconfig
+*.swp
+*.swo
+*~
+
+# Logs
+logs/
+*.log
+
+# TypeScript cache
+*.tsbuildinfo

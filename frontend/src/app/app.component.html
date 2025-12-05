@@ -1,0 +1,56 @@
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container">
+    <a class="navbar-brand" routerLink="/">
+      <i class="bi bi-calendar-check me-2"></i>
+      Appointment Booking System
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/book" routerLinkActive="active">
+            <i class="bi bi-plus-circle me-1"></i> Book Appointment
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/manage" routerLinkActive="active">
+            <i class="bi bi-gear me-1"></i> Manage Booking
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main>
+  <router-outlet></router-outlet>
+</main>
+
+<!-- Footer -->
+<footer class="mt-auto">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6">
+        <h5>Appointment Booking System</h5>
+        <p class="mb-0">Book and manage your appointments online</p>
+      </div>
+      <div class="col-md-6 text-md-end">
+        <p class="mb-1">
+          <i class="bi bi-telephone me-2"></i> Support: 1-800-BOOKING
+        </p>
+        <p class="mb-0">
+          <i class="bi bi-envelope me-2"></i> support@bookingsystem.com
+        </p>
+      </div>
+    </div>
+    <hr class="my-3">
+    <div class="text-center">
+      <small>&copy; 2025 Appointment Booking System. All rights reserved.</small>
+    </div>
+  </div>
+</footer>
