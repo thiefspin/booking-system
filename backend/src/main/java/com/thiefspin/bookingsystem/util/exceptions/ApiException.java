@@ -2,7 +2,9 @@ package com.thiefspin.bookingsystem.util.exceptions;
 
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
+import lombok.Getter;
 
+@Getter
 public abstract class ApiException extends Exception {
   Integer status;
   String message;

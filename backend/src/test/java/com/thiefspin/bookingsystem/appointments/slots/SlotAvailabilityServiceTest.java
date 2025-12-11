@@ -15,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -35,6 +36,7 @@ class SlotAvailabilityServiceTest {
 
   @BeforeEach
   void setUp() {
+    ReflectionTestUtils.setField(service, "slotDurationMinutes", 30);
     testBranch = new Branch(
         1L,
         "JHB-001",
@@ -46,7 +48,7 @@ class SlotAvailabilityServiceTest {
         3
     );
 
-    testDate = LocalDate.now().plusDays(1); // Tomorrow
+    testDate = LocalDate.now().plusDays(1);
   }
 
   @Nested

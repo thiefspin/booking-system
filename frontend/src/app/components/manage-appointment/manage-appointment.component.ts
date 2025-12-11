@@ -152,7 +152,6 @@ export class ManageAppointmentComponent {
       return false;
     }
 
-    // Can only cancel PENDING or CONFIRMED appointments
     if (
       this.appointment.status !== "PENDING" &&
       this.appointment.status !== "CONFIRMED"
@@ -160,7 +159,6 @@ export class ManageAppointmentComponent {
       return false;
     }
 
-    // Cannot cancel past appointments
     const appointmentDate = new Date(this.appointment.appointmentDateTime);
     const now = new Date();
     return appointmentDate > now;

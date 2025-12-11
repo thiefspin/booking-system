@@ -8,18 +8,20 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class SlotAvailabilityService {
 
-  private AppointmentRepository repository;
+  private final AppointmentRepository repository;
 
-  private static final int DEFAULT_SLOT_DURATION_MINUTES = 30;
+  @Value("${branch.max-time-slot-minutes}")
+  private int slotDurationMinutes;
 
   public List<TimeSlot> getAvailableSlots(Branch branch, LocalDate date) {
     if (date.isBefore(LocalDate.now())) {
@@ -39,25 +41,25 @@ public class SlotAvailabilityService {
       LocalDateTime slotDateTime = LocalDateTime.of(date, currentTime);
 
       if (slotDateTime.isBefore(LocalDateTime.now())) {
-        currentTime = currentTime.plusMinutes(DEFAULT_SLOT_DURATION_MINUTES);
+        currentTime = currentTime.plusMinutes(slotDurationMinutes);
         continue;
       }
 
       TimeSlot slot = createTimeSlot(branch, slotDateTime);
       slots.add(slot);
 
-      currentTime = currentTime.plusMinutes(DEFAULT_SLOT_DURATION_MINUTES);
+      currentTime = currentTime.plusMinutes(slotDurationMinutes);
     }
     return slots;
   }
 
   private boolean canCreateSlot(LocalTime currentTime, LocalTime closingTime) {
-    LocalTime slotEndTime = currentTime.plusMinutes(DEFAULT_SLOT_DURATION_MINUTES);
+    LocalTime slotEndTime = currentTime.plusMinutes(slotDurationMinutes);
     return slotEndTime.isBefore(closingTime) || slotEndTime.equals(closingTime);
   }
 
   private TimeSlot createTimeSlot(Branch branch, LocalDateTime slotDateTime) {
-    LocalDateTime slotEndDateTime = slotDateTime.plusMinutes(DEFAULT_SLOT_DURATION_MINUTES);
+    LocalDateTime slotEndDateTime = slotDateTime.plusMinutes(slotDurationMinutes);
     Integer currentBookings = repository.countActiveAppointmentsAtTime(branch.id(), slotDateTime);
     Integer maxBookings = branch.maxConcurrentAppointmentsPerSlot();
 

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class BranchService {
 
-  private BranchRepository repository;
+  private final BranchRepository repository;
 
   public Page<Branch> list(Pageable pageable) {
     return repository.findAll(pageable)

@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/branches")
 public class BranchController {
 
-  private BranchService service;
+  private final BranchService service;
 
   @GetMapping
   @Operation(

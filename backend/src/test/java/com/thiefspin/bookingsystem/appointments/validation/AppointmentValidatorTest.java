@@ -1,11 +1,23 @@
 package com.thiefspin.bookingsystem.appointments.validation;
 
+import static org.assertj.core.api.Assertions.assertThatNoException;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import com.thiefspin.bookingsystem.appointments.AppointmentEntity;
 import com.thiefspin.bookingsystem.appointments.AppointmentRepository;
 import com.thiefspin.bookingsystem.appointments.AppointmentStatus;
 import com.thiefspin.bookingsystem.branches.Branch;
 import com.thiefspin.bookingsystem.branches.BranchService;
 import com.thiefspin.bookingsystem.util.exceptions.BadRequestException;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -14,15 +26,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AppointmentValidator Tests")
@@ -38,7 +41,6 @@ class AppointmentValidatorTest {
     private AppointmentValidator validator;
 
     private Branch testBranch;
-    private AppointmentEntity testEntity;
 
     @BeforeEach
     void setUp() {
@@ -51,25 +53,6 @@ class AppointmentValidatorTest {
             LocalTime.of(8, 0),
             LocalTime.of(17, 0),
             3
-        );
-
-        testEntity = new AppointmentEntity(
-            1L,
-            "BK12345678",
-            1L,
-            "John",
-            "Doe",
-            "john.doe@example.com",
-            "+27821234567",
-            LocalDateTime.now().plusDays(1).withHour(10).withMinute(0),
-            30,
-            "Consultation",
-            "Notes",
-            AppointmentStatus.CONFIRMED.name(),
-            Instant.now(),
-            Instant.now(),
-            null,
-            null
         );
     }
 

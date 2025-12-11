@@ -247,7 +247,7 @@ class AppointmentControllerTest {
             mockMvc.perform(post("/api/appointments/book")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(objectMapper.writeValueAsString(validRequest)))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400));
 
             verify(appointmentService).createAppointment(any(AppointmentRequest.class));
@@ -432,7 +432,7 @@ class AppointmentControllerTest {
         }
 
         @Test
-        @DisplayName("Should return 404 when appointment cannot be cancelled")
+        @DisplayName("Should return 400 when appointment cannot be cancelled")
         void shouldReturn400WhenCannotCancel() throws Exception {
             // Given
             String email = "john.doe@example.com";
@@ -445,7 +445,7 @@ class AppointmentControllerTest {
             mockMvc.perform(put("/api/appointments/cancel")
                     .param("email", email)
                     .param("bookingReference", TEST_BOOKING_REF))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isBadRequest());
 
             verify(appointmentService).cancelAppointment(eq(TEST_BOOKING_REF), anyString());
         }

@@ -1,5 +1,17 @@
 package com.thiefspin.bookingsystem.branches;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.time.Instant;
+import java.time.LocalTime;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -13,15 +25,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.time.Instant;
-import java.time.LocalTime;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 @DisplayName("BranchService Tests")
 class BranchServiceTest {
@@ -33,7 +36,6 @@ class BranchServiceTest {
   private BranchService service;
 
   private BranchEntity testBranchEntity;
-  private Branch testBranch;
   private Pageable pageable;
 
   @BeforeEach
@@ -53,17 +55,6 @@ class BranchServiceTest {
         true,
         Instant.now(),
         Instant.now()
-    );
-
-    testBranch = new Branch(
-        1L,
-        "JHB-001",
-        "Johannesburg Central",
-        "123 Main Street",
-        "+27111234567",
-        LocalTime.of(9, 0),
-        LocalTime.of(17, 0),
-        3
     );
   }
 

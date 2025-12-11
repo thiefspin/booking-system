@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.time.Instant;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,13 +15,14 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+@Slf4j
 @ControllerAdvice
 public class ApplicationControllerAdvice {
 
   @ExceptionHandler(ClientApiException.class)
   public ResponseEntity<ApiErrorResponse> handleNotFound(ClientApiException ex,
       HttpServletRequest request) {
-    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.toApiErrorResponse());
+    return ResponseEntity.status(ex.getStatus()).body(ex.toApiErrorResponse());
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -56,7 +58,8 @@ public class ApplicationControllerAdvice {
   }
 
   @ExceptionHandler(MissingServletRequestParameterException.class)
-  public ResponseEntity<ApiErrorResponse> handleValidation(MissingServletRequestParameterException ex,
+  public ResponseEntity<ApiErrorResponse> handleValidation(
+      MissingServletRequestParameterException ex,
       HttpServletRequest request) {
 
     ApiErrorResponse body = new ApiErrorResponse(
@@ -88,6 +91,11 @@ public class ApplicationControllerAdvice {
   @ExceptionHandler(Exception.class)
   public ResponseEntity<ApiErrorResponse> handleNotFound(Exception ex,
       HttpServletRequest request) {
+    log.error("Unexpected error on {} {}: {}",
+        request.getMethod(),
+        request.getRequestURI(),
+        ex.getMessage(),
+        ex);
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
         new ApiErrorResponse(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),

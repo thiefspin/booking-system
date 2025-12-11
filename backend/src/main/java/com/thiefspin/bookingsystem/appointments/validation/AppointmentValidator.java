@@ -15,9 +15,9 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 public class AppointmentValidator {
 
-  private AppointmentRepository repository;
+  private final AppointmentRepository repository;
 
-  private BranchService branchService;
+  private final BranchService branchService;
 
   public void validateSlotAvailable(Long branchId, LocalDateTime dateTime)
       throws BadRequestException {
@@ -65,7 +65,8 @@ public class AppointmentValidator {
   }
 
   private boolean checkCapacity(Long branchId, LocalDateTime dateTime, Branch branch) {
-    return repository.countActiveAppointmentsAtTime(branchId, dateTime)
+    return repository.countActiveAppointmentsAtTime(
+        branchId, dateTime)
         < branch.maxConcurrentAppointmentsPerSlot();
   }
 }

@@ -15,24 +15,26 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @AllArgsConstructor
 public class AppointmentService {
 
-  private AppointmentRepository repository;
+  private final AppointmentRepository repository;
 
-  private BranchService branchService;
+  private final BranchService branchService;
 
-  private BookingReferenceGenerator referenceGenerator;
+  private final BookingReferenceGenerator referenceGenerator;
 
-  private AppointmentValidator validator;
+  private final AppointmentValidator validator;
 
-  private SlotAvailabilityService slotAvailabilityService;
+  private final SlotAvailabilityService slotAvailabilityService;
 
-  private NotificationService notificationService;
+  private final NotificationService notificationService;
 
   public Optional<Appointment> findByEmailAndReference(String email, String bookingReference) {
     return repository.findByCustomerEmailAndBookingReference(email, bookingReference)
@@ -54,7 +56,11 @@ public class AppointmentService {
     AppointmentEntity entity = AppointmentEntity.fromRequest(request, bookingReference);
     AppointmentEntity saved = repository.save(entity);
 
-    notificationService.sendConfirmationEvent(saved);
+    notificationService.sendConfirmationEvent(saved)
+        .exceptionally(ex -> {
+          log.error("Failed to send confirmation event for appointment {}", saved.id(), ex);
+          return null;
+        });
 
     return saved.toModel();
   }
@@ -70,7 +76,11 @@ public class AppointmentService {
     AppointmentEntity cancelled = appointment.withCancellation(reason, Instant.now());
     AppointmentEntity saved = repository.save(cancelled);
 
-    notificationService.sendCancellationEvent(saved);
+    notificationService.sendCancellationEvent(saved)
+        .exceptionally(ex -> {
+          log.error("Failed to send cancellation event for appointment {}", saved.id(), ex);
+          return null;
+        });
 
     return saved.toModel();
   }
